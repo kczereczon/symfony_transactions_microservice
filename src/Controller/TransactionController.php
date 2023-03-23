@@ -23,7 +23,7 @@ class TransactionController extends AbstractController
             'transactions' => $transactions,
             'total' => $total,
             'page' => $page,
-            'pages' => $pages,
+            'pages' => $pages + 1,
             'next' => $this->generateUrl(
                 'app_transaction',
                 ['page' => ($page + 1 > $pages) ? $page : $page + 1, 'limit' => $limit]
@@ -31,7 +31,8 @@ class TransactionController extends AbstractController
             'previous' => $this->generateUrl(
                 'app_transaction',
                 ['page' => ($page - 1 <= 0) ? 1 : $page - 1, 'limit' => $limit]
-            )
+            ),
+            'limit' => $limit
         ]);
     }
 }
