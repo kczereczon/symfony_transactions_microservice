@@ -18,13 +18,13 @@ class PaginatorService
         $limit = $request->query->get('limit', 25);
         $items = $repository->findBy(criteria: $criteria, limit: $limit, offset: $limit * ($page - 1));
         $total = $repository->count(criteria: $criteria);
-        $pages = (int)($total / $limit);
+        $pages = floor($total / $limit);
 
         return new JsonResponse([
             'items' => $items,
             'total' => $total,
             'page' => $page,
-            'pages' => $pages + 1,
+            'pages' => $pages,
             'next' => $this->urlGenerator->generate(
                 $request->attributes->get('_route'),
                 ['page' => ($page + 1 > $pages) ? $page : $page + 1, 'limit' => $limit]
