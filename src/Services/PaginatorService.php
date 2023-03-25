@@ -33,7 +33,7 @@ class PaginatorService
                 $request->attributes->get('_route'),
                 ['page' => ($page - 1 <= 0) ? 1 : $page - 1, 'limit' => $limit]
             ),
-            'limit' => $limit
+            'limit' => (int)$limit
         ]);
     }
 }
