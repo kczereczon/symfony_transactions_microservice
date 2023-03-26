@@ -15,10 +15,15 @@ class PaginatorService
 
     public function paginate(EntityRepository $repository, Request $request, array $criteria = []): mixed {
         $page = $request->query->get('page', 1);
+        $page = $page <= 1 ? 1 : $page;
+
         $limit = $request->query->get('limit', 25);
+        $limit = $limit <= 1 ? 1 : $limit;
+
         $items = $repository->findBy(criteria: $criteria, limit: $limit, offset: $limit * ($page - 1));
         $total = $repository->count(criteria: $criteria);
         $pages = floor($total / $limit);
+
 
         return new JsonResponse([
             'items' => $items,
