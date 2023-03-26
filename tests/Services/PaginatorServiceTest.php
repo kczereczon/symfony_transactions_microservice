@@ -214,4 +214,41 @@ class PaginatorServiceTest extends TestCase
             $paginatorService->paginate($repositoryMock, $request, [])
         );
     }
+
+    public function testPaginateCriteria()
+    {
+        $paginatorService = new PaginatorService(
+            $this->urlGeneratorFactory()
+        );
+
+        $items = [];
+        foreach (range(0, 24) as $i) {
+            $items[$i] = new \stdClass();
+        }
+
+        $criteria = ['filter1' => 1, 'filter2' => 2];
+        $repositoryMock = $this->createMock(EntityRepository::class);
+        $repositoryMock->expects($this->once())->method('count')
+            ->with(['filter1' => 1, 'filter2' => 2])->willReturn(
+                100
+            );
+        $repositoryMock->expects($this->once())->method('findBy')
+            ->with(['filter1' => 1, 'filter2' => 2])->willReturn(
+                $items
+            );
+        $request = new Request(['page' => 1, 'limit' => 0], [], ['_route' => 'app_test']);
+
+        $this->assertEquals(
+            new JsonResponse([
+                'items' => $items,
+                'total' => 100,
+                'page' => 1,
+                'pages' => 100,
+                'next' => '/app_test?page=2&limit=1&filter1=1&filter2=2',
+                'previous' => '/app_test?page=1&limit=1&filter1=1&filter2=2',
+                'limit' => 1
+            ]),
+            $paginatorService->paginate($repositoryMock, $request, $criteria)
+        );
+    }
 }

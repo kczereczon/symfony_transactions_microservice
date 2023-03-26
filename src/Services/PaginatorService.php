@@ -13,7 +13,11 @@ class PaginatorService
     {
     }
 
-    public function paginate(EntityRepository $repository, Request $request, array $criteria = []): mixed {
+    public function paginate(
+        EntityRepository $repository,
+        Request $request,
+        array $criteria = [],
+    ): JsonResponse {
         $page = $request->query->get('page', 1);
         $page = $page <= 1 ? 1 : $page;
 
@@ -32,11 +36,11 @@ class PaginatorService
             'pages' => $pages,
             'next' => $this->urlGenerator->generate(
                 $request->attributes->get('_route'),
-                ['page' => ($page + 1 > $pages) ? $page : $page + 1, 'limit' => $limit]
+                ['page' => ($page + 1 > $pages) ? $page : $page + 1, 'limit' => $limit, ...$criteria]
             ),
             'previous' => $this->urlGenerator->generate(
                 $request->attributes->get('_route'),
-                ['page' => ($page - 1 <= 0) ? 1 : $page - 1, 'limit' => $limit]
+                ['page' => ($page - 1 <= 0) ? 1 : $page - 1, 'limit' => $limit, ...$criteria]
             ),
             'limit' => (int)$limit
         ]);
