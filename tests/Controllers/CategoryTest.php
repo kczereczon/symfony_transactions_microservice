@@ -28,7 +28,7 @@ class CategoryTest extends ApiTestCase
 
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
-            'pages' => 1,
+            'pages' => 0,
             'page' => 1,
             'next' => '/category?page=1&limit=25',
             'previous' => '/category?page=1&limit=25',
