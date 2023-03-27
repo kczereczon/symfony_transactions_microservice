@@ -11,7 +11,7 @@ trait RefreshDatabase
     /**
      * @throws \Exception
      */
-    public function setUp(): void
+    public function migrate(): void
     {
         // Call the parent setup method
         parent::setUp();
@@ -25,7 +25,7 @@ trait RefreshDatabase
         $application->run(new ArrayInput($options));
     }
 
-    public function tearDown(): void
+    public function clear(): void
     {
         // Call the parent teardown method
         parent::tearDown();
