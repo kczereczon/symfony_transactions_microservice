@@ -251,4 +251,47 @@ class PaginatorServiceTest extends TestCase
             $paginatorService->paginate($repositoryMock, $request, $criteria)
         );
     }
+
+    public function testPaginateSortBy()
+    {
+        $paginatorService = new PaginatorService(
+            $this->urlGeneratorFactory()
+        );
+
+        $items = [];
+        foreach (range(0, 24) as $i) {
+            $items[$i] = new \stdClass();
+        }
+
+        $repositoryMock = $this->createMock(EntityRepository::class);
+        $repositoryMock->expects($this->once())->method('count')
+            ->with([])->willReturn(
+                100
+            );
+        $repositoryMock->expects($this->once())->method('findBy')
+            ->with([], sortBy: ['sortBy' => ['field1' => 'asc', 'field2' => 'desc']])->willReturn(
+                $items
+            );
+        $request = new Request(['page' => 1, 'limit' => 0, 'sortBy' => ['field1' => 'asc', 'field2' => 'desc']],
+            [],
+            ['_route' => 'app_test']);
+
+        $this->assertEquals(
+            new JsonResponse([
+                'items' => $items,
+                'total' => 100,
+                'page' => 1,
+                'pages' => 100,
+                'next' => '/app_test?page=2&limit=1&sortBy%5Bfield1%5D=asc&sortBy%5Bfield2%5D=desc',
+                'previous' => '/app_test?page=1&limit=1&sortBy%5Bfield1%5D=asc&sortBy%5Bfield2%5D=desc',
+                'limit' => 1
+            ]),
+            $paginatorService->paginate(
+                $repositoryMock,
+                $request,
+                [],
+                ['sortBy' => ['field1' => 'asc', 'field2' => 'desc']]
+            )
+        );
+    }
 }

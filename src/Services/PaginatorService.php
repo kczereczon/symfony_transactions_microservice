@@ -17,6 +17,7 @@ class PaginatorService
         EntityRepository $repository,
         Request $request,
         array $criteria = [],
+        array $sortBy = []
     ): JsonResponse {
         $page = $request->query->get('page', 1);
         $page = $page <= 1 ? 1 : $page;
@@ -24,10 +25,9 @@ class PaginatorService
         $limit = $request->query->get('limit', 25);
         $limit = $limit <= 1 ? 1 : $limit;
 
-        $items = $repository->findBy(criteria: $criteria, limit: $limit, offset: $limit * ($page - 1));
+        $items = $repository->findBy(criteria: $criteria, orderBy: $sortBy, limit: $limit, offset: $limit * ($page - 1));
         $total = $repository->count(criteria: $criteria);
         $pages = floor($total / $limit);
-
 
         return new JsonResponse([
             'items' => $items,
@@ -36,11 +36,11 @@ class PaginatorService
             'pages' => $pages,
             'next' => $this->urlGenerator->generate(
                 $request->attributes->get('_route'),
-                ['page' => ($page + 1 > $pages) ? $page : $page + 1, 'limit' => $limit, ...$criteria]
+                ['page' => ($page + 1 > $pages) ? $page : $page + 1, 'limit' => $limit, ...$criteria, ...$sortBy]
             ),
             'previous' => $this->urlGenerator->generate(
                 $request->attributes->get('_route'),
-                ['page' => ($page - 1 <= 0) ? 1 : $page - 1, 'limit' => $limit, ...$criteria]
+                ['page' => ($page - 1 <= 0) ? 1 : $page - 1, 'limit' => $limit, ...$criteria, ...$sortBy]
             ),
             'limit' => (int)$limit
         ]);
