@@ -3,12 +3,16 @@
 namespace App\Tests\Controllers;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use App\DataFixtures\CategoryFixtures;
 use App\Entity\Category;
 use App\Tests\Traits\RefreshDatabase;
+use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Faker\Factory;
 use Faker\Generator;
+use Liip\TestFixturesBundle\Services\DatabaseToolCollection;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
@@ -26,16 +30,16 @@ class CategoryTest extends ApiTestCase
     /**
      * @throws \Exception
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
+        parent::setUp();
+
         $this->migrate();
 
-        $kernel = static::createKernel();
-        $kernel->boot();
-        $this->entityManager = $kernel->getContainer()
-            ->get('doctrine')
-            ->getManager();
+        $this->entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $this->databaseTool = self::getContainer()->get(DatabaseToolCollection::class);
         $this->faker = Factory::create();
+        $this->purger = new ORMPurger($this->entityManager);
     }
 
     /**
@@ -48,16 +52,16 @@ class CategoryTest extends ApiTestCase
      */
     public function testPaginationStructure(): void
     {
-        $response = static::createClient()->request('GET', '/category');
-
-        foreach (range(0, 100) as $item) {
+        foreach (range(1, 100) as $i) {
             $category = new Category();
-            $category->setColor($this->faker->hexColor);
-            $category->setName($this->faker->name);
+            $category->setName($this->faker->domainName());
+            $category->setColor($this->faker->colorName());
             $this->entityManager->persist($category);
         }
 
         $this->entityManager->flush();
+
+        static::createClient()->request('GET', '/category');
 
         self::assertResponseIsSuccessful();
         self::assertJsonContains([
@@ -70,9 +74,10 @@ class CategoryTest extends ApiTestCase
         ]);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
-        $this->clear();
+        parent::tearDown();
+        $this->purger->purge();
         $this->entityManager->close();
         $this->entityManager = null;
     }
