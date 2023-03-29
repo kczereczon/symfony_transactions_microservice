@@ -1,0 +1,4 @@
+App\Entity\Category:
+  food:
+    name: "Food"
+    color: "#FF8000"
